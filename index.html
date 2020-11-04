@@ -1,0 +1,80 @@
+<!--
+Simple one page example Object Detection using TensorflowJS, CocoSSD, and Canvas.
+By: Fazaio
+
+Malang
+Nov 5,2020 
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"> </script>
+    <!-- Load the coco-ssd model. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"> </script>
+</head>
+<style>
+    .container{
+        text-align: center;
+    }
+</style>
+
+<body>
+
+    <!-- Replace this with your image. Make sure CORS settings allow reading the image! -->
+    <div class="container">
+        <img id="img" src="cat.jpg" />
+        <canvas id="canvas"></canvas>
+    </div>
+</body>
+
+</html>
+
+<!-- Place your code in the script tag below. You can also use an external .js file -->
+<script>
+    // Notice there is no 'import' statement. 'cocoSsd' and 'tf' is
+    // available on the index-page because of the script tag above.
+
+    const img = document.getElementById('img');
+    // img.src = 'cat.jpg';
+
+    // Load the model.
+    cocoSsd.load('lite_mobilenet_v2').then(model => {
+        // detect objects in the image.
+        model.detect(img).then(predictions => {
+            console.log(img.clientWidth)
+            console.log(img.clientHeight)
+            console.log('Predictions: ', predictions);
+
+            const canvas = document.getElementById('canvas')
+            const ctx = canvas.getContext("2d"); 
+            canvas.width = img.clientWidth;
+            canvas.height = img.clientHeight;
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);  // Fonts
+            const font = "16px sans-serif";
+            ctx.font = font;
+            ctx.textBaseline = "top";
+            ctx.drawImage(img, 0, 0, img.clientWidth, img.clientHeight); predictions.forEach(prediction => {
+                const x = prediction.bbox[0];
+                const y = prediction.bbox[1];
+                const width = prediction.bbox[2];
+                const height = prediction.bbox[3];  // Bounding box
+                ctx.strokeStyle = "#00FFFF";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, width, height);  // Label background
+                ctx.fillStyle = "#00FFFF";
+                const textWidth = ctx.measureText(prediction.class).width;
+                const textHeight = parseInt(font, 10); // base 10
+                ctx.fillRect(x, y, textWidth + 4, textHeight + 4);
+            }); predictions.forEach(prediction => {
+
+                const x = prediction.bbox[0];
+                const y = prediction.bbox[1]; ctx.fillStyle = "#000000";
+                ctx.fillText(prediction.class, x, y);
+            });
+        });
+        });
+</script>
